@@ -6,14 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://example.com">
-  <title>Archives: 2021/2 | Cong</title>
+  <title>常用数组方法使用及源码剖析 | Cong</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Cong">
-<meta property="og:url" content="http://example.com/archives/2021/02/index.html">
+  <meta name="description" content="es5 常用数组方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常用数组方法使用及源码剖析">
+<meta property="og:url" content="http://example.com/2021/03/06/%E6%95%B0%E7%BB%84%E6%96%B9%E6%B3%95%E6%B7%B1%E5%85%A5%E8%BF%9B%E9%98%B6/index.html">
 <meta property="og:site_name" content="Cong">
+<meta property="og:description" content="es5 常用数组方法">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-03-06T10:35:18.000Z">
+<meta property="article:modified_time" content="2021-03-07T12:33:49.690Z">
 <meta property="article:author" content="Cong">
+<meta property="article:tag" content="javascript">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Cong" type="application/atom+xml">
@@ -154,98 +159,228 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-数组方法深入进阶" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/02/23/%E5%89%8D%E7%AB%AF%E5%9F%BA%E7%A1%80%E9%9D%A2%E8%AF%95%E9%A2%98%E5%90%88%E9%9B%86/" class="archive-article-date">
-  	<time datetime="2021-02-23T14:50:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-02-23</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/02/23/%E5%89%8D%E7%AB%AF%E5%9F%BA%E7%A1%80%E9%9D%A2%E8%AF%95%E9%A2%98%E5%90%88%E9%9B%86/">前端基础面试题合集</a>
+    <h1 class="article-title" itemprop="name">
+      常用数组方法使用及源码剖析
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2021/03/06/%E6%95%B0%E7%BB%84%E6%96%B9%E6%B3%95%E6%B7%B1%E5%85%A5%E8%BF%9B%E9%98%B6/" class="archive-article-date">
+  	<time datetime="2021-03-06T10:35:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-03-06</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="es5-常用数组方法"><a href="#es5-常用数组方法" class="headerlink" title="es5 常用数组方法"></a>es5 常用数组方法</h1><span id="more"></span>
+<p>分为两大类：</p>
+<ul>
+<li>改变原素组<br>push、pop、shift、unshift、sort、reverse、splice</li>
+<li>不改变原数组<br>concat、join、split、toString、slice</li>
+</ul>
+<p>注：改变原数组就是会改变你当前需要操作的数组，而不改变原素组则是将你当前操作的数组<strong>拷贝</strong>一份新的进行操作，而不改变原来的数组。</p>
+<p>接下来一一分析：</p>
+<h3 id="数组下标进行增删改查"><a href="#数组下标进行增删改查" class="headerlink" title="数组下标进行增删改查"></a>数组下标进行增删改查</h3><ul>
+<li>数组下标<code>arr[num]</code>实现增删改查 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arr = [<span class="string">&quot;貂蝉&quot;</span>, <span class="string">&quot;吕布&quot;</span>, <span class="string">&quot;赵云&quot;</span>];</span><br><span class="line"><span class="comment">// 查询</span></span><br><span class="line"><span class="built_in">console</span>.log(arr[<span class="number">1</span>]); <span class="comment">// 吕布</span></span><br><span class="line"><span class="comment">// 修改</span></span><br><span class="line">arr[<span class="number">1</span>] = <span class="string">&quot;张飞&quot;</span>; <span class="comment">// 数组变成[&quot;貂蝉&quot;, &quot;张飞&quot;, &quot;赵云&quot;]</span></span><br><span class="line"><span class="comment">// 增加</span></span><br><span class="line">arr[<span class="number">3</span>] = <span class="string">&quot;刘备&quot;</span>; <span class="comment">// 数组变成[&quot;貂蝉&quot;, &quot;张飞&quot;, &quot;赵云&quot;, &quot;刘备&quot;]</span></span><br><span class="line"><span class="comment">// 删除（不推荐使用）</span></span><br><span class="line"><span class="keyword">delete</span> arr[<span class="number">0</span>]; <span class="comment">// 数组变成[&quot;empty&quot;, &quot;张飞&quot;, &quot;赵云&quot;, &quot;刘备&quot;]</span></span><br></pre></td></tr></table></figure>
+<h3 id="push（添加）"><a href="#push（添加）" class="headerlink" title="push（添加）"></a><code>push</code>（添加）</h3></li>
+<li>作用：在数组<strong>末端</strong>添加一个元素</li>
+<li>返回值：返回操作完之后的数组长度</li>
+<li>参数: 可以传入一个或多个元素，实现向数组的<strong>末端</strong>添加一个或多个元素<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重写数组的push方法</span></span><br><span class="line"><span class="built_in">Array</span>.prototype.myPush = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="built_in">arguments</span>.length; i++) &#123;</span><br><span class="line">    <span class="built_in">this</span>[<span class="built_in">this</span>.length] = <span class="built_in">arguments</span>[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">this</span>.length;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="unshift（添加）"><a href="#unshift（添加）" class="headerlink" title="unshift（添加）"></a><code>unshift</code>（添加）</h3></li>
+<li>作用：在数组<strong>首端</strong>添加一个元素</li>
+<li>返回值：返回操作完之后的数组长度</li>
+<li>参数: 可以传入一个或多个元素，实现向数组的<strong>首端</strong>添加一个或多个元素<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重写数组的unshift方法</span></span><br><span class="line"><span class="built_in">Array</span>.prototype.myUnshift = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">//创建一个新数组接收添加的元素</span></span><br><span class="line">  <span class="keyword">let</span> newArr = [];</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="built_in">arguments</span>.length; i++) &#123;</span><br><span class="line">    newArr[i] = <span class="built_in">arguments</span>[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> len = newArr.length;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="built_in">this</span>.length; i++) &#123;</span><br><span class="line">    newArr[i + len] = <span class="built_in">this</span>[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; newArr.length; i++) &#123;</span><br><span class="line">    <span class="built_in">this</span>[i] = newArr[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">this</span>.length;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="pop（删除）"><a href="#pop（删除）" class="headerlink" title="pop（删除）"></a><code>pop</code>（删除）</h3></li>
+<li>作用：在数组<strong>末端</strong>删除一个元素</li>
+<li>返回值：返回操作完之后的原数组</li>
+<li>参数：不支持传入参数<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重写数组的pop方法</span></span><br><span class="line"><span class="built_in">Array</span>.prototype.myPop = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> returnValue = <span class="built_in">this</span>[<span class="built_in">this</span>.length - <span class="number">1</span>];</span><br><span class="line">  <span class="built_in">this</span>.length--;</span><br><span class="line">  <span class="keyword">return</span> returnValue;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="shift（删除）"><a href="#shift（删除）" class="headerlink" title="shift（删除）"></a><code>shift</code>（删除）</h3></li>
+<li>作用：在数组<strong>首端</strong>删除一个元素</li>
+<li>返回值：返回操作完之后的原数组</li>
+<li>参数：不支持传入参数<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重写数组的shift方法</span></span><br><span class="line"><span class="built_in">Array</span>.prototype.myShift = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> newArr = [];</span><br><span class="line">  <span class="keyword">let</span> returnValue = <span class="built_in">this</span>[<span class="number">0</span>];</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="built_in">this</span>.length - <span class="number">1</span>; i++) &#123;</span><br><span class="line">    newArr[i] = <span class="built_in">this</span>[i + <span class="number">1</span>];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; newArr.length; i++) &#123;</span><br><span class="line">    <span class="built_in">this</span>[i] = newArr[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">this</span>.length--;</span><br><span class="line">  <span class="keyword">return</span> returnValue;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+注：<code>push/pop</code> 方法运行的比<strong>较快</strong>，而 <code>shift/unshift</code> 比<strong>较慢</strong>。为什么作用于数组的末端会比首端快，因为无论是在首端添加还是删除，整个数组的索引值都会依次递增或者依次递减，数组里的元素越多，移动所花的时间就越多，也意味着更多的内存操作；反之，操作末端的元素，不需要移动任何东西，只需要清理索引值并缩短<code>length</code>或者添加索引值并增加<code>length</code>即可。</li>
+</ul>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/alipay.jpg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/assets/wechat.jpg">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">面试</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">javascript</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+  <div class="share-btn share-icons tooltip-left">
+    <div class="tooltip tooltip-east">
+      <span class="tooltip-item">
+        <a href="javascript:;" class="share-sns share-outer">
+          <i class="icon icon-share"></i>
+        </a>
+      </span>
+      <span class="tooltip-content">
+        <div class="share-wrap">
+          <div class="share-icons">
+            <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+              <i class="icon icon-weibo"></i>
+            </a>
+            <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+              <i class="icon icon-weixin"></i>
+            </a>
+            <a class="qq share-sns" href="javascript:;" data-type="qq">
+              <i class="icon icon-qq"></i>
+            </a>
+            <a class="douban share-sns" href="javascript:;" data-type="douban">
+              <i class="icon icon-douban"></i>
+            </a>
+            <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+              <i class="icon icon-qzone"></i>
+            </a>
+            <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+              <i class="icon icon-facebook"></i>
+            </a>
+            <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+              <i class="icon icon-twitter"></i>
+            </a>
+            <a class="google share-sns" href="javascript:;" data-type="google">
+              <i class="icon icon-google"></i>
+            </a>
+          </div>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </span>
+    </div>
+  </div>
+
+  <div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img
+        src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://dongshuyan.github.io/021/03/06/%E6%95%B0%E7%BB%84%E6%96%B9%E6%B3%95%E6%B7%B1%E5%85%A5%E8%BF%9B%E9%98%B6/"
+        alt="微信分享二维码">
+    </div>
+  </div>
+
+  <div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/02/21/2021.2.21/" class="archive-article-date">
-  	<time datetime="2021-02-21T12:22:14.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-02-21</time>
-</a>
+<nav id="article-nav">
+  
+    <a href="/2021/03/07/%E6%94%B9%E5%8F%98%E7%BD%91%E9%A1%B5%E8%83%8C%E6%99%AF%E9%A2%9C%E8%89%B2%E7%9A%84%E6%96%B9%E6%B3%95/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          如何改变网页背景颜色
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/02/23/%E5%89%8D%E7%AB%AF%E5%9F%BA%E7%A1%80%E9%9D%A2%E8%AF%95%E9%A2%98%E5%90%88%E9%9B%86/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">前端基础面试题合集</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/02/21/2021.2.21/">关于目标</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#es5-%E5%B8%B8%E7%94%A8%E6%95%B0%E7%BB%84%E6%96%B9%E6%B3%95"><span class="toc-number">1.</span> <span class="toc-text">es5 常用数组方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E7%BB%84%E4%B8%8B%E6%A0%87%E8%BF%9B%E8%A1%8C%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5"><span class="toc-number">1.0.1.</span> <span class="toc-text">数组下标进行增删改查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#push%EF%BC%88%E6%B7%BB%E5%8A%A0%EF%BC%89"><span class="toc-number">1.0.2.</span> <span class="toc-text">push（添加）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#unshift%EF%BC%88%E6%B7%BB%E5%8A%A0%EF%BC%89"><span class="toc-number">1.0.3.</span> <span class="toc-text">unshift（添加）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pop%EF%BC%88%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">1.0.4.</span> <span class="toc-text">pop（删除）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#shift%EF%BC%88%E5%88%A0%E9%99%A4%EF%BC%89"><span class="toc-number">1.0.5.</span> <span class="toc-text">shift（删除）</span></a></li></ol></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
         </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
+        
+    </div>
+</aside>
+
+
+
   
   
-    </div></section>
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -271,8 +406,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
